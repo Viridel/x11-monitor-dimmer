@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=X11 Monitor Dimmer
+Comment=Show or hide the X11 Monitor Dimmer controller
+Exec=/home/media/.local/bin/dimmer-toggle.sh
+Icon=video-display
+Terminal=false
+Categories=Utility;
+StartupNotify=false
