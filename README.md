@@ -1,237 +1,108 @@
 # X11 Monitor Dimmer
 
-A lightweight multi-monitor dimmer for **Linux X11** with per-monitor overlay dimming, persistent monitor naming, host-monitor-aware controller placement, tray support, and optional EDID-based model name detection.
+A lightweight multi-display dimmer for **Linux X11**, originally authored by **Viridel48 through v0.85**.
 
 ## Status
 
-**Current project state:** stable for the original author's environment.
+**v0.85 is the final original-author X11 release.** Future Wayland or broader display-server support is intentionally left to community developers. **v1.0 is reserved for that future compatibility milestone.**
 
-- Initial author: **viridel48**
-- Current milestone snapshot: **v0.75**
-- This project is being released to the community for further development.
-- It is **unlikely to receive major future updates** from the initial author, because it already works correctly for the original configuration.
-- **v1.0 is intentionally reserved for the point at which the project supports both X11 and Wayland.**
+## Highlights
 
-## Scope
+- independent overlay dimming for each connected display
+- 100% means truly off: the corresponding overlay window is destroyed
+- two independently stored defaults per display
+- optional custom names for both defaults
+- quick-dim presets from 90% through 20%
+- global restore controls and **Dimmer Off All**
+- EDID-based display names with safe `Display #N` fallback
+- manual custom display names always take precedence
+- host-display-aware controller placement
+- panel/menu toggle workflow
+- tray Show / Hide / Quit support
+- compact About, Credits, History, and Future Roadmap panels
+- restrained **For the Animals** support-the-author reminder
 
-This project currently targets:
+## Display naming
 
-- **Linux X11**
-- GTK3
-- Cinnamon-friendly workflow
-- Per-monitor overlay dimming
-- Read-only EDID-based model-name detection
+The display-name hierarchy is:
 
-This project does **not** currently target:
+1. Custom name
+2. EDID/system display name
+3. `Display #N`
 
-- Wayland
-- full hardware brightness control via DDC/CI
-- broad multi-desktop support guarantees
-- universal packaging
+The controller presents the name and X11 port on two lines, for example:
 
-## What matters most in everyday use
+```text
+ARZOPA
+DP-3
+```
 
-The following items are ranked by practical user impact, not by implementation order.
+If the system cannot provide a model name, dimming functionality is completely unaffected. The easiest resolution is simply to enter a Custom name.
 
-1. **Reliable per-monitor dimming on X11**
-   - The project exists first and foremost to provide stable, practical monitor dimming where native brightness control is unsuitable or unavailable.
+## Installation
 
-2. **Predictable controller behavior**
-   - The controller opens, hides, reopens, and follows the selected host monitor reliably.
-   - Geometry and placement are treated as first-class behavior, not cosmetic extras.
+v0.85 is distributed as a standard Debian/Ubuntu/Linux Mint `.deb` package.
 
-3. **Low-friction runtime flow**
-   - Panel launcher toggles the controller.
-   - The GUI **Close** button hides it.
-   - Tray support provides **Show / Hide** and **Quit** without needing a terminal.
+1. Download `X11-Monitor-Dimmer-v0.85-Final.deb`.
+2. Double-click the file.
+3. Choose **Install Package** in the system package installer.
+4. After installation, open the application menu, search for **X11 Monitor Dimmer**, and launch it.
+5. On Cinnamon, right-click the running panel/taskbar icon and pin it if you want permanent one-click access.
 
-4. **Per-monitor defaults and clean monitor management**
-   - Each monitor can be dimmed independently.
-   - Defaults can be saved and restored.
-   - Manual custom names are preserved.
+The package manager handles the required runtime dependencies automatically. No terminal extraction step is required.
 
-5. **Model-aware labeling**
-   - When available, EDID/model information is used to label displays clearly.
-   - This improves usability without depending on full DDC/CI brightness control.
+## Runtime model
 
-6. **Minimal overhead when dimming is functionally off**
-   - A no-functional dim state should not leave a useless overlay running.
+- launcher: Show / Hide
+- controller Close: Hide
+- tray: Show / Hide / Quit
+- **Dimmer Off All** and global default restores start an automatic close countdown
+- mouse movement and activity outside the application do not cancel that countdown
+- an intentional click inside the application cancels it
+- if the **For the Animals** reminder is visible, that reminder must be resolved before a pending global-action countdown begins
 
-7. **Inline support-the-author reminder**
-   - The `for_the_animals` line is intentionally low-priority and non-intrusive.
-   - It is not a popup, not a blocker, and not part of normal control flow.
-   - It exists only as a small support-the-author message encouraging users to consider donating to a local animal shelter or cruelty prevention service.
-   - Under normal production settings, it should appear only rarely, generally a few times a year at most for ordinary usage.
+## Requirements
 
-## Confirmed working architecture
+Core runtime requirements include:
 
-The codebase is split into focused modules:
-
-- `ui_window.py` — top-level orchestration
-- `ui_alignment.py` — window geometry and host-monitor positioning
-- `ui_rows.py` — main monitor row widgets
-- `ui_animals.py` — inline support-the-author row UI
-- `for_the_animals.py` — launch-count reminder state/policy
-- `ui_tray.py` — tray icon integration
-- `ddcu.py` — read-only EDID/model/model-name resolution
-- `overlay.py` — overlay dimming control
-- `config.py` — persisted settings/config helpers
-
-## Feature summary
-
-- Per-monitor overlay dimming
-- Per-monitor slider + Off button
-- Save / Restore Default brightness
-- Manual custom monitor naming
-- Resolved monitor model names from EDID
-- Default label format: `ModelName (Port)`
-- Label precedence:
-  1. Custom name override
-  2. DDC/EDID model label in format `ModelName (Port)`
-  3. Generic fallback `Monitor (Port)`
-- Host-monitor-aware controller placement
-- Shared-grid UI alignment
-- Tray icon with Show / Hide and Quit
-- Panel/taskbar launcher toggle workflow
-- Inline `for_the_animals` support-the-author reminder
-- Optional `ddcutil` installer helper
-
-## Important behavior
-
-### Open / close model
-
-The intended everyday workflow is:
-
-- panel or launcher button toggles the controller
-- tray menu offers Show / Hide and Quit
-- GUI **Close** hides the controller
-- the app remains self-contained in the background until explicitly quit
-
-### Overlay behavior
-
-When dimming is functionally off, the overlay should not remain running as a no-op.  
-A no-functional dim state should fully terminate or disable the overlay rather than keep dead overhead around.
-
-## DDC / model-name support
-
-This project does **not** currently rely on successful DDC/CI brightness control.
-
-Instead, the implemented v0.60 path uses **read-only EDID/model detection** to resolve display names such as:
-
-- `ARZOPA (DP-3)`
-- `TOSHIBA-TV (DP-5)`
-
-That means model-name retrieval can work even when full VCP brightness control does not.
-
-## Dependencies
-
-Core runtime depends on a typical GTK3/X11 Python environment plus a few external utilities.
-
-Examples used in development:
-
+- Linux X11 session
 - Python 3
-- GTK 3 via PyGObject
-- `wmctrl`
+- GTK 3 / PyGObject
+- python-xlib
 - `xrandr`
+- `wmctrl`
+- Ayatana AppIndicator GTK3 bindings for tray integration
 
-Optional or feature-dependent items:
+The final application does not require hardware brightness control.
 
-- `ddcutil` for read-only model-name retrieval helpers
-- Ayatana AppIndicator GI bindings for tray support
+## Configuration
 
-## Installation notes
+User configuration is stored under:
 
-This project currently assumes a local/manual install style rather than a packaged distribution.
+```text
+~/.config/x11-monitor-dimmer/
+```
 
-Typical pieces include:
+Application files, documentation, and icon resources are installed system-wide by the package manager. Removing or upgrading the package does not require deleting your personal configuration.
 
-- Python launcher script
-- local shell wrappers
-- `.desktop` entries
-- optional tray support
-- optional `ddcutil` helper script
+## For the Animals
 
-## Configuration notes
+If this tool has been useful to you, please consider showing appreciation by donating to a local animal shelter or cruelty-prevention organization.
 
-The app persists its state and supports:
+The in-application reminder is deliberately low-frequency: first appearance at open 100, **Remind me later** adds 10 opens, and **No thanks** adds 200 opens.
 
-- remembered host monitor
-- remembered custom monitor names
-- remembered defaults
-- launch-count tracking for `for_the_animals`
+## Future roadmap
 
-## Notes on `for_the_animals`
+The original author's active development ends with v0.85. Community continuation is welcome for Wayland support, future display-server structures, compatibility work, and other enhancements.
 
-The `for_the_animals` feature is intentionally restrained.
+If broader compatibility is implemented, the `X11` portion of the application name may be replaced with a more universally representative name.
 
-It is:
+The original author's preference is that the application remain freely available rather than becoming a paid product, subscription, paid-feature service, or other monetized software. This is an author preference, not an additional GPL licensing condition.
 
-- an inline line in the controller window
-- a support-the-author style note
-- a prompt to consider donating to a local animal shelter or cruelty prevention service
-- intentionally non-spammy
+The **For the Animals** messaging should retain its intent; genuine enhancements such as location-aware shelter information, websites, or contact details are encouraged.
 
-It is **not**:
+Consistent with the attribution principles recognized in GPLv3 Section 7(b), future developers are respectfully asked to retain the original project accreditation through future updates and enhancements: **Originally authored by Viridel48 through v0.85.** This is a request from the original author and is not intended as an additional licensing condition.
 
-- a popup
-- a startup block
-- a hard-disable mechanism
-- a central feature of the dimmer
+## License
 
-Production behavior is intentionally conservative:
-
-- first appearance at open **100**
-- **Remind me later** delays the next appearance by **10** more opens
-- **No thanks** delays the next appearance by **200** more opens
-
-For most ordinary use patterns, that means it should only appear a few times a year at most.
-
-## Development notes
-
-This repo is intentionally being released in a state that is:
-
-- useful
-- working
-- modular enough for continuation
-
-It is **not** claiming to be a broad final desktop product yet.
-
-If you continue development, the most meaningful future targets are:
-
-- broader desktop/session validation
-- Wayland compatibility
-- cleanup and packaging
-- community-driven refinement
-
-## Roadmap snapshot
-
-- **v0.50** — `for_the_animals`
-- **v0.60** — DDCU / read-only model retrieval
-- **v0.75** — polish and runtime integration
-- **v0.80** — GitHub/repo preparation
-- **v1.0** — reserved for X11 + Wayland compatibility
-
-## Tested environment
-
-Known-good development environment included:
-
-- Linux Mint Cinnamon
-- X11
-- NVIDIA proprietary driver path
-- multi-monitor configuration with DP outputs
-
-This does **not** guarantee identical behavior on all systems.
-
-## Contributing
-
-Community continuation is welcome.
-
-Please keep changes focused and avoid rewriting stable modules unnecessarily, especially:
-
-- `ui_alignment.py`
-- confirmed working UI layout behavior
-- stable tray/toggle runtime flow
-
-## Author
-
-Initial author: **viridel48**
+GPL-3.0. See `LICENSE`.

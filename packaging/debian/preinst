@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+# Upgrades must not leave an already-running Python process using the previous
+# in-memory UI modules after package files are replaced. Stop both the packaged
+# app and any legacy per-user install before dpkg writes the new files.
+if command -v pkill >/dev/null 2>&1; then
+    pkill -f '/usr/lib/x11-monitor-dimmer/dimmer-app.py' >/dev/null 2>&1 || true
+    pkill -f '/.local/bin/dimmer-app.py' >/dev/null 2>&1 || true
+fi
+
+exit 0

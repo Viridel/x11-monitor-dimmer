@@ -1,8 +1,8 @@
 from __future__ import annotations
+
 import json
 import os
 import re
-import signal
 import subprocess
 from pathlib import Path
 
@@ -15,27 +15,44 @@ PIDFILE = RUNTIME_DIR / "app.pid"
 MIN_BRIGHTNESS = 20
 MAX_BRIGHTNESS = 100
 MIN_DEFAULT = 40
+MAX_CUSTOM_NAME = 12
+DEFAULT_SLOTS = (1, 2)
+QUICK_BRIGHTNESS_LEVELS = (90, 80, 70, 60, 50, 40, 30, 20)
 
 BASELINE_WIDTH = 3840
 MIN_SCALE = 0.65
 MAX_SCALE = 1.00
 
 
+def _new_config():
+    return {
+        "monitors": {},
+        "ui_host_output": None,
+        "default_names": {},
+    }
+
+
 def load_config():
     if not CONFIG_FILE.exists():
-        return {
-            "monitors": {},
-            "ui_host_output": None,
-            "sync_sliders": False,
-        }
+        return _new_config()
+
     try:
-        return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
     except Exception:
-        return {
-            "monitors": {},
-            "ui_host_output": None,
-            "sync_sliders": False,
-        }
+        return _new_config()
+
+    if not isinstance(cfg, dict):
+        return _new_config()
+
+    if not isinstance(cfg.get("monitors"), dict):
+        cfg["monitors"] = {}
+    if not isinstance(cfg.get("default_names"), dict):
+        cfg["default_names"] = {}
+    cfg.setdefault("ui_host_output", None)
+
+    # sync_sliders is intentionally ignored by the redesigned UI, but an
+    # existing key is harmless and is left untouched for backwards safety.
+    return cfg
 
 
 def save_config(cfg):
@@ -63,10 +80,6 @@ def parse_xrandr():
             }
         )
     return monitors
-
-
-def default_label(mon):
-    return f"Monitor {mon['output']}"
 
 
 def already_running():

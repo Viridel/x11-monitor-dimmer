@@ -1,0 +1,13 @@
+Package: x11-monitor-dimmer
+Version: 0.85-1
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Viridel48
+Depends: python3, python3-gi, gir1.2-gtk-3.0, python3-xlib, gir1.2-ayatanaappindicator3-0.1, x11-xserver-utils, wmctrl, procps, libx11-6, libxext6
+Description: per-display overlay dimmer for Linux X11
+ X11 Monitor Dimmer provides independent overlay dimming for connected
+ displays, two saved defaults per display, quick-dim presets, custom display
+ and default names, tray controls, and EDID-based display identification.
+ .
+ Originally authored by Viridel48 through v0.85.

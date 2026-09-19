@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+APP="/usr/lib/x11-monitor-dimmer/dimmer-app.py"
+PIDS="$(pgrep -f "python3 $APP" || true)"
+
+if [ -z "$PIDS" ]; then
+    exit 0
+fi
+
+echo "$PIDS" | xargs -r kill

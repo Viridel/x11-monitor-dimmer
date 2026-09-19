@@ -2,9 +2,10 @@
 Version=1.0
 Type=Application
 Name=Quit X11 Monitor Dimmer
-Comment=Fully terminate the X11 Monitor Dimmer background instance
-Exec=/home/media/.local/bin/dimmer-quit.sh
+Comment=Fully terminate X11 Monitor Dimmer
+Exec=/usr/bin/x11-monitor-dimmer-quit
 Icon=application-exit
 Terminal=false
 Categories=Utility;
 StartupNotify=false
+NoDisplay=true

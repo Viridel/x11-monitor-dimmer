@@ -1,102 +1,83 @@
 # Changelog
 
+## v0.85 — Final X11 release
+Since v0.80:
+- Implemented a standard Debian/Ubuntu/Linux Mint installer with dependency handling, application-menu integration, desktop shortcut creation, and upgrade support.
+- Added the dedicated project icon and improved launcher / panel integration.
+- Finalized the shared popup-shell design, modal background dimming, and consistent Name Displays / Name Defaults / About presentation.
+- Corrected final GUI formatting, sizing, alignment, and popup-behavior issues discovered during live testing.
+- Final original-author X11 release.
+
+## v0.80 — Controller redesign development milestone
+- Added a second independent saved default for each display.
+- Added custom names for both saved defaults.
+- Added per-display Set / Restore controls for both defaults.
+- Added global **All to [Default]** controls.
+- Added quick-dim preset buttons from 90% through 20%.
+- Added **Dimmer Off All** with automatic controller close.
+- Added **Name Defaults** management.
+- Improved display identification with Custom → EDID/system → `Display #N` fallback.
+- Added graceful missing-EDID guidance without affecting dimming functionality.
+- Added the **ⓘ Information** panel with Credits, Full History Log, and Future Roadmap.
+- Refined auto-close so only intentional clicks inside the application interrupt the countdown.
+
 ## v0.75
-- Runtime flow completed into a self-contained desktop-style application model
-- Panel launcher toggle flow finalized
-- Tray support added with Show / Hide and Quit
-- Quit helper added
-- `ui_animals.py` extracted from `ui_window.py`
-- Read-only EDID/DDCU model-name integration finalized in live UI
-- Default display label format finalized as `ModelName (Port)`
-- Label precedence locked as:
-  1. Custom override
-  2. DDC/EDID model label in format `ModelName (Port)`
-  3. Generic fallback `Monitor (Port)`
-- Optional `ddcutil` installer helper added and tested
-- Backup / locked-state workflow matured for milestone preservation
+- Runtime flow completed into a self-contained desktop-style application model.
+- Panel launcher toggle flow finalized.
+- Tray support added with Show / Hide and Quit.
+- Quit helper added.
+- `ui_animals.py` extracted from `ui_window.py`.
+- Read-only display model-name integration finalized in the live UI at that milestone.
+- Backup / locked-state workflow matured for milestone preservation.
 
 ## v0.60
-- DDCU scope clarified and narrowed to **read-only model retrieval**
-- Full DDC/CI brightness control explicitly removed from milestone scope
-- `ddcu.py` created for read-only probing and EDID/model resolution
-- Verified output-to-model mapping from the live display stack
-- Model-name retrieval confirmed working without requiring successful VCP brightness control
-- EDID-backed labels verified for:
-  - `ARZOPA (DP-3)`
-  - `TOSHIBA-TV (DP-5)`
+- Display-identification work narrowed to read-only model retrieval.
+- Full DDC/CI brightness control explicitly removed from project scope.
+- `ddcutil` was explored during development but was not required by the final identification path.
+- EDID-backed model-name retrieval was verified from the X11 display stack.
 
 ## v0.50
-- `for_the_animals` feature implemented
-- Inline support-the-author message added to the controller window
-- Launch-count-based reminder logic finalized
-- Reminder behavior finalized as:
+- `for_the_animals` feature implemented.
+- Inline support-the-author message added to the controller window.
+- Launch-count-based reminder logic finalized.
+- Production reminder behavior established:
   - first appearance at open 100
   - **Remind me later** = +10 opens
   - **No thanks** = +200 opens
-- `for_the_animals.py` established as the policy/state module
-- Feature intentionally kept non-popup, bounded, and low-frequency
 
 ## Pre-v0.50 foundation work
-This is where the bulk of the project’s engineering effort occurred.
 
 ### Core dimmer architecture
-- Project established as an **X11 overlay dimmer** rather than a gamma/colour-shift tool
-- Real per-monitor overlay dimming made functional
-- Overlay lifecycle stabilized so functionally-off dim states do not leave pointless no-op behavior behind
-- Persistent configuration support established
+- Project established as an **X11 overlay dimmer** rather than a gamma/colour-shift tool.
+- Real per-display overlay dimming made functional.
+- Overlay lifecycle stabilized so a functionally-off state destroys the overlay instead of leaving a transparent no-op window.
+- Persistent configuration support established.
 
 ### Main controller behavior
-- Per-monitor slider workflow implemented
-- Per-monitor **Off** behavior implemented
-- **Save as Default** and **Restore Default** behavior implemented
-- Default validation rules added, including lower-bound restrictions for saved defaults
-- Error messaging refined and kept inline instead of disruptive popups
+- Per-display slider workflow implemented.
+- Per-display Off behavior implemented.
+- Save / Restore default-brightness behavior implemented.
+- Default validation rules added.
+- Error messaging refined and kept inline instead of disruptive popups.
 
-### Naming and monitor identity
-- Manual custom monitor naming implemented
-- Reset Device Names behavior added
-- Fallback naming behavior established
-- Monitor naming and persistence behavior stabilized before later EDID/model integration
+### Naming and display identity
+- Manual custom display naming implemented.
+- Reset naming behavior added.
+- Fallback naming and persistence stabilized before later EDID/model integration.
 
 ### Windowing and placement
-- Host monitor selection implemented
-- Host monitor persistence added
-- Controller movement between monitors implemented
-- Top-level always-on-top style behavior implemented
-- Top-middle placement behavior established
-- Fade show / fade hide behavior implemented
-- Fade transition between host monitors implemented
+- Host-display selection and persistence implemented.
+- Controller movement between displays implemented.
+- Always-on-top, top-middle placement, and fade behavior established.
 
-### UI refactor and alignment work
-- Original UI layout went through multiple restructuring passes
-- Per-row independent layout approach was replaced with a **shared-grid layout**
-- Column alignment problems were resolved
-- Bottom row alignment and button positioning were resolved
-- Width/profile tuning for 1080p and 4K usage was repeatedly refined
-- Height/spacing behavior was compacted and stabilized
+### UI refactor and alignment
+- Independent row layouts were replaced by a shared-grid layout.
+- Column alignment and bottom-control positioning were stabilized.
+- Geometry logic was extracted into `ui_alignment.py`.
+- Confirmed host alignment achieved across the development 1080p and 4K display configuration.
 
-### Geometry separation
-- Geometry logic was extracted from the main window into `ui_alignment.py`
-- This separation resolved long-standing centering and size-application issues
-- Confirmed working host alignment achieved on both:
-  - `DP-3`
-  - `DP-5`
-- Final confirmed geometry state stabilized after multiple troubleshooting passes
-
-### Runtime and control model
-- Single-instance behavior implemented
-- Signal-based reopen/toggle flow implemented
-- Hide vs reopen logic stabilized
-- Close-button behavior finalized as **hide**, not terminate
-- Toggle launcher wrapper added and verified
-- Desktop-style usage model became possible before tray support was added
-
-### Project structure maturation
-- Codebase gradually split into focused modules instead of one growing window file
-- `ui_rows.py` established for row widgets
-- `ui_alignment.py` established for geometry
-- Later milestones continued this modularization, but the core structural cleanup began here
-
-## Notes
-- `v1.0` is intentionally reserved for a release that supports both X11 and Wayland.
-- The project is currently considered stable for the original author’s configuration and is being released for community continuation.
+### Runtime and project structure
+- Single-instance and signal-based show/hide behavior implemented.
+- Close-button behavior finalized as hide rather than terminate.
+- Toggle launcher wrapper established.
+- Codebase split into focused modules for overlay, alignment, rows, window orchestration, tray support, and reminder state.

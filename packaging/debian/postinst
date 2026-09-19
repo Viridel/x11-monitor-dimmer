@@ -1,0 +1,97 @@
+#!/bin/sh
+set -e
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+
+find_active_user() {
+    if command -v loginctl >/dev/null 2>&1; then
+        sid=$(loginctl show-seat seat0 -p ActiveSession --value 2>/dev/null || true)
+        if [ -n "$sid" ]; then
+            user=$(loginctl show-session "$sid" -p Name --value 2>/dev/null || true)
+            remote=$(loginctl show-session "$sid" -p Remote --value 2>/dev/null || true)
+            if [ -n "$user" ] && [ "$user" != "root" ] && [ "$remote" != "yes" ]; then
+                printf '%s\n' "$user"
+                return 0
+            fi
+        fi
+
+        for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}'); do
+            active=$(loginctl show-session "$sid" -p Active --value 2>/dev/null || true)
+            remote=$(loginctl show-session "$sid" -p Remote --value 2>/dev/null || true)
+            user=$(loginctl show-session "$sid" -p Name --value 2>/dev/null || true)
+            if [ "$active" = "yes" ] && [ "$remote" != "yes" ] && \
+               [ -n "$user" ] && [ "$user" != "root" ]; then
+                printf '%s\n' "$user"
+                return 0
+            fi
+        done
+    fi
+
+    who 2>/dev/null | awk '$0 ~ /\(:[0-9]+\)/ {print $1; exit}'
+}
+
+desktop_dir_for_user() {
+    home="$1"
+    desktop_dir="$home/Desktop"
+    cfg="$home/.config/user-dirs.dirs"
+
+    if [ -r "$cfg" ]; then
+        raw=$(sed -n 's/^XDG_DESKTOP_DIR="\([^"]*\)".*/\1/p' "$cfg" | head -n1)
+        case "$raw" in
+            '$HOME'/*) desktop_dir="$home/${raw#\$HOME/}" ;;
+            /*) desktop_dir="$raw" ;;
+        esac
+    fi
+
+    printf '%s\n' "$desktop_dir"
+}
+
+user=$(find_active_user || true)
+shortcut_created=no
+
+if [ -n "$user" ]; then
+    passwd_line=$(getent passwd "$user" 2>/dev/null || true)
+    if [ -n "$passwd_line" ]; then
+        uid=$(printf '%s' "$passwd_line" | cut -d: -f3)
+        gid=$(printf '%s' "$passwd_line" | cut -d: -f4)
+        home=$(printf '%s' "$passwd_line" | cut -d: -f6)
+        desktop_dir=$(desktop_dir_for_user "$home")
+        shortcut="$desktop_dir/X11 Monitor Dimmer.desktop"
+
+        if install -d -m 755 -o "$uid" -g "$gid" "$desktop_dir" >/dev/null 2>&1 && \
+           install -m 755 -o "$uid" -g "$gid" \
+               /usr/share/applications/x11-monitor-dimmer.desktop \
+               "$shortcut" >/dev/null 2>&1; then
+            shortcut_created=yes
+
+            if command -v runuser >/dev/null 2>&1 && command -v gio >/dev/null 2>&1 && \
+               [ -S "/run/user/$uid/bus" ]; then
+                runuser -u "$user" -- env \
+                    DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+                    gio set "$shortcut" metadata::trusted true >/dev/null 2>&1 || true
+            fi
+        fi
+
+        # Show a persistent, simple completion/instruction window in the user's
+        # graphical session. Launch it detached so package installation itself
+        # is never blocked waiting for the user to close the window.
+        if command -v runuser >/dev/null 2>&1 && [ -S "/run/user/$uid/bus" ]; then
+            display=$(who 2>/dev/null | awk -v u="$user" '$1==u && match($0, /\(:[0-9]+\)/) {s=substr($0,RSTART+1,RLENGTH-2); print s; exit}')
+            [ -n "$display" ] || display=":0"
+
+            runuser -u "$user" -- env \
+                DISPLAY="$display" \
+                DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+                X11MD_SHORTCUT_CREATED="$shortcut_created" \
+                sh -c 'sleep 1; nohup /usr/lib/x11-monitor-dimmer/install-complete.py >/dev/null 2>&1 &' \
+                >/dev/null 2>&1 || true
+        fi
+    fi
+fi
+
+exit 0

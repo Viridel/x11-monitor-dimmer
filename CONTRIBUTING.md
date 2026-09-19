@@ -1,70 +1,61 @@
 # Contributing
 
-Thanks for helping continue development.
+Thanks for helping continue development of X11 Monitor Dimmer.
 
 ## Project state
 
-This project is being released in a stable state for the original author's environment.  
-Please treat confirmed-working behavior as valuable, especially where geometry and runtime flow are concerned.
+**v0.85 is the final X11 release from the original author, Viridel48.** The application is being left to the community for Wayland support, broader display-server compatibility, maintenance, and future enhancements.
+
+`v1.0` is intentionally reserved for a future release that adds Wayland / broader display-server support.
 
 ## Priorities
 
 Good contributions are likely to be:
 
-- isolated
-- easy to review
-- low-risk
-- respectful of already-working modules
+- focused and easy to review
+- low-risk to confirmed-working X11 behavior
+- tested on the environment they claim to support
+- respectful of the existing controller geometry and runtime workflow
 
 ## Please avoid
 
-- broad rewrites of `ui_window.py` unless clearly necessary
-- destabilizing `ui_alignment.py` without strong reason
-- changing working runtime toggle/tray behavior casually
-- claiming Wayland support before it is actually implemented and validated
+- broad rewrites of working modules without a clear need
+- changing the established Set / Restore or overlay lifecycle casually
+- leaving a 100% / disabled overlay alive as a transparent no-op window
+- claiming Wayland support before it is implemented and validated
+- changing display ordering into a user-managed feature unless there is a compelling reason
 
-## Labeling policy
+## Display naming policy
 
-Default monitor label precedence should remain:
+Display label precedence is:
 
-1. Custom override
-2. DDC/EDID model label in format `ModelName (Port)`
-3. Generic fallback `Monitor (Port)`
+1. Custom name
+2. EDID/system display name
+3. `Display #N`
 
-## Versioning note
+The controller displays the resolved name and X11 port on two lines. Custom names always win. If EDID naming is unavailable, dimming still functions normally and the generic `Display #N` fallback is used.
 
-`v1.0` should remain reserved for a release that supports both:
+## Project identity
 
-- X11
-- Wayland
+Future developers are respectfully asked to retain the original project accreditation:
 
-## Recommended contribution style
+**Originally authored by Viridel48 through v0.85.**
 
-Keep changes small and focused.
+This is a request from the original author and is not intended as an additional licensing condition.
 
-Examples of good change scopes:
-
-- one bug fix
-- one UI refinement
-- one dependency/install improvement
-- one module extraction
-- one desktop integration improvement
+The **For the Animals** messaging should retain its intent. Genuine enhancements such as location-aware shelter information, websites, or contact details are welcome.
 
 ## Before submitting
 
-Please make sure:
+Please confirm that:
 
 - Python files compile cleanly
-- the dimmer still opens and closes correctly
-- tray behavior still works if tray support is enabled
-- panel/launcher toggle behavior still works
-- no-working overlay behavior is not left running pointlessly
+- the controller opens, hides, and reopens correctly
+- tray Show / Hide / Quit still works
+- per-display dimming still works independently
+- Default 1 and Default 2 remain independent
+- 100% / Dimmer Off fully terminates the relevant overlay
+- display naming fallback still works if EDID data is unavailable
+- popup geometry remains usable at the resolutions / scaling you tested
 
-## Communication
-
-When opening a PR or issue, include:
-
-- what changed
-- why it changed
-- what was tested
-- what environment you tested on
+When opening a PR or issue, include what changed, why it changed, what you tested, and the environment you tested on.

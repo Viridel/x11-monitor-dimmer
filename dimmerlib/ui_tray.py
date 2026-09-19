@@ -17,10 +17,17 @@ except Exception as exc:
 
 
 class TrayController:
-    def __init__(self, toggle_cb, quit_cb, icon_name="video-display"):
+    def __init__(
+        self,
+        toggle_cb,
+        quit_cb,
+        icon_name="x11-monitor-dimmer",
+        icon_theme_path=None,
+    ):
         self.toggle_cb = toggle_cb
         self.quit_cb = quit_cb
         self.icon_name = icon_name
+        self.icon_theme_path = icon_theme_path
         self.available = _IndicatorLib is not None
         self.backend = _INDICATOR_BACKEND
         self.error = _BACKEND_ERROR
@@ -30,11 +37,20 @@ class TrayController:
         if not self.available:
             return
 
-        self.indicator = _IndicatorLib.Indicator.new(
-            "x11-monitor-dimmer",
-            self.icon_name,
-            _IndicatorLib.IndicatorCategory.APPLICATION_STATUS,
-        )
+        if self.icon_theme_path:
+            self.indicator = _IndicatorLib.Indicator.new_with_path(
+                "x11-monitor-dimmer",
+                self.icon_name,
+                _IndicatorLib.IndicatorCategory.APPLICATION_STATUS,
+                self.icon_theme_path,
+            )
+        else:
+            self.indicator = _IndicatorLib.Indicator.new(
+                "x11-monitor-dimmer",
+                self.icon_name,
+                _IndicatorLib.IndicatorCategory.APPLICATION_STATUS,
+            )
+
         self.indicator.set_status(_IndicatorLib.IndicatorStatus.ACTIVE)
         self.indicator.set_title("X11 Monitor Dimmer")
 
@@ -56,4 +72,3 @@ class TrayController:
 
     def _on_quit(self, *_args):
         self.quit_cb()
-
