@@ -2,6 +2,8 @@
 
 A lightweight multi-display dimmer for **Linux X11**, originally authored by **Viridel48 through v0.85**.
 
+![X11 Monitor Dimmer v0.85](X11-monitor-dimmer.png)
+
 ## Status
 
 **v0.85 is the final original-author X11 release.** Future Wayland or broader display-server support is intentionally left to community developers. **v1.0 is reserved for that future compatibility milestone.**
